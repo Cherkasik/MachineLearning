@@ -1,17 +1,19 @@
 k1, k2 = map(int, input().split())
 n = int(input())
-variance = { i: { j: 0 for j in range(k2) } for i in range(k1) }
-sumRow = [0 for _ in range(k1)]
-sumColumn = [0 for _ in range(k2)]
+
+k1Count = [0] * k1
+k2Count = [0] * k2
+variance = [{} for _ in range(k1)]
 for _ in range(n):
     x1, x2 = map(int, input().split())
-    variance[x1 - 1][x2 - 1] += 1
-    sumRow[x1 -1] += 1
-    sumColumn[x2 - 1] += 1
-hi2 = 0
+    k1Count[x1 - 1] += 1
+    k2Count[x2 - 1] += 1
+    variance[x1 - 1][x2 - 1] = (variance[x1 - 1].get(x2 - 1) or 0) + 1
+k1Sum = sum(k1Count)
+k2Sum = sum(k2Count)
+hi2 = (k1Sum * k2Sum) / n
 for i in range(k1):
-    for j in range(k2):
-        if sumRow[i] != 0 and sumColumn[j] != 0:
-            theoryVariance = sumRow[i] * sumColumn[j] / n
-            hi2 += ((variance[i][j] - theoryVariance) ** 2) / theoryVariance
+    for key, value in variance[i].items():
+        cur = (k1Count[i] * k2Count[key]) / n
+        hi2 += ((value - cur) ** 2) / cur - cur
 print(hi2)

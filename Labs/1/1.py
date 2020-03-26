@@ -225,7 +225,8 @@ def FindBestParametersOneHot(features, labels, classesNumber):
 
 def NaiveRegression():
     print('Running Naive regression...')
-    bestParameters = FindBestParametersNative(features, labels, classesNumber)
+    # bestParameters = FindBestParametersNative(features, labels, classesNumber)
+    bestParameters = {'distanceFunction': 'manhattan', 'kernelFunction': 'triweight', 'windowType': 'variable', 'windowParameter': 1}
     # distanceFunction - manhattan, kernelFunction - any (uniform), windowType - variable, windowParameter - 1
     fScores = []
     featuresLen = len(features)
@@ -254,7 +255,7 @@ def NaiveRegression():
 def OneHotRegression():
     print('Running regression with One Hot conversion')
     #bestParameters = FindBestParametersOneHot(features, labels, classesNumber)
-    bestParameters = {'fScore': 0.46567037834213315, 'distanceFunction': 'manhattan', 'kernelFunction': 'triweight', 'windowType': 'variable', 'windowParameter': 20}
+    bestParameters = {'fScore': 0.46567037834213315, 'distanceFunction': 'manhattan', 'kernelFunction': 'uniform', 'windowType': 'variable', 'windowParameter': 20}
     # distanceFunction - manhattan, kernelFunction - triweight, windowType - variable, windowParameter - 20
     fScores = []
     encodedLabels = np.array(pd.get_dummies(pd.Series(labels)))
