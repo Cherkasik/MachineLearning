@@ -2,16 +2,19 @@ import math
 
 kx, ky = map(int, input().split())
 n = int(input())
-p = { i: { j: 0 for j in range(ky) } for i in range(kx) }
-sumX = [0 for i in range(kx)]
+p = [{} for _ in range(kx)]
+sumX = [0] * kx
 for i in range(n):
     x, y = map(int, input().split())
-    p[x - 1][y - 1] += 1
     sumX[x - 1] += 1
+    p[x - 1][y - 1] = (p[x - 1].get(y - 1) or 0) + 1
 h = 0
 for i in range(kx):
-    if sumX[i] != 0:
-        for j in range(ky):
-            if p[i][j] != 0:
-                h -= (p[i][j] / n) * math.log(p[i][j] / sumX[i])
+    curX = sumX[i]
+    curP = curX / n
+    curH = 0
+    for x in p[i].values():
+        if x != 0:
+            curH -= (x / curX) * math.log(x / curX)
+    h += curH * curP
 print(h)
