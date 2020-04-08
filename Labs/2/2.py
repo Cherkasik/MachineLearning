@@ -252,7 +252,7 @@ if __name__ == '__main__':
             'mutationAmplitude': 0.1,
             'regularizationStrength': 1e-05,
             'sizePopulation': 50,
-            'generationsNumber': 10,
+            'generationsNumber': 100,
             'parentProportion': 0.1,
             'randomGeneAmplitude': 1000
             }
