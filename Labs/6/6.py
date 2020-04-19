@@ -8,7 +8,7 @@ from torch.autograd import Variable
 
 def RunNN(trainImages, trainLabels, testImages, testLabels):
     nnModel = nn.Sequential(
-        nn.Conv1d(28, 28, 1, padding=1),
+        nn.Conv1d(1, 8, 3, padding=1),
         nn.ReLU(inplace=True),
         nn.MaxPool2d(2),
         nn.Softmax2d()
