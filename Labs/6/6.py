@@ -119,15 +119,6 @@ class Softmax:
             return dLdInputs.reshape(self.lastInputShape)
 
 def RunNN(trainImages, trainLabels, testImages, testLabels):
-    filtersAmount = 8
-    nodesAmount = 10  # количество классов
-    initialSize = 26  # размер изображения
-    # 28x28x1 (исходный размер) -> 26x26x8
-    conv = Conv3x3(filtersAmount)
-    # 26x26x8 -> 13x13x8
-    pool = MaxPool2()
-    softmax = Softmax((initialSize // 2) * (initialSize // 2) * filtersAmount, nodesAmount)
-
     def ForwardPropagation(image, label):
         # нормировка данных в изображении
         out = conv.ForwardPropagation((image / 255) - 0.5)
@@ -146,12 +137,47 @@ def RunNN(trainImages, trainLabels, testImages, testLabels):
         gradient = conv.BackPropagation(gradient)
         return loss, acc
 
+    def GetLabel(probs):
+        label = 0
+        labelProb = probs[0]
+        for i in range(1, len(probs)):
+            if probs[i] > labelProb:
+                label = i
+                labelProb = probs[i]
+        return label
+
+    def ConfusionMatrix(nodesAmount, predictions, labels):
+        cm = np.zeros((nodesAmount, nodesAmount), np.int)
+        for p, l in zip(predictions, labels):
+            cm[l][p] += 1
+        print('Confusion Matrix:')
+        print(DataFrame(cm))
+        print('---------------------------------------------------------------------------------------------')
+    
+    def BestMatchMatrix(nodesAmount, predictions, labels):
+        mm = np.zeros((nodesAmount, nodesAmount), np.int)
+        for i in range(len(predictions)):
+            mm[labels[i]][predictions[i]] = i + 1
+        print('Best Match Matrix: ')
+        print(DataFrame(mm))
+        print('---------------------------------------------------------------------------------------------')
+
+
+    filtersAmount = 8
+    nodesAmount = 10  # количество классов
+    initialSize = 26  # размер изображения
+    # 28x28x1 -> 26x26x8
+    conv = Conv3x3(filtersAmount)
+    # 26x26x8 -> 13x13x8
+    pool = MaxPool2()
+    softmax = Softmax((initialSize // 2) * (initialSize // 2) * filtersAmount, nodesAmount)
+    # match matrix
+    mm = np.zeros((nodesAmount, nodesAmount), np.int)
     for epoch in range(3):
         print('--- Epoch %d ---' % (epoch + 1))
         permutation = np.random.permutation(len(trainImages))
         trainImages = trainImages[permutation]
         trainLabels = trainLabels[permutation]
-
         loss = 0
         numCorrect = 0
         for i, (im, label) in enumerate(zip(trainImages, trainLabels)):
@@ -165,37 +191,21 @@ def RunNN(trainImages, trainLabels, testImages, testLabels):
             l, isRight = Train(im, label)
             loss += l
             numCorrect += isRight
-
     loss = 0
     numCorrect = 0
     predictions = []
-
-    def GetLabel(probs):
-        label = 0
-        labelProb = probs[0]
-        for i in range(1, len(probs)):
-            if probs[i] > labelProb:
-                label = i
-                labelProb = probs[i]
-        return label
-
     for im, label in zip(testImages, testLabels):
         out, l, isRight = ForwardPropagation(im, label)
         predictions.append(GetLabel(out))
         loss += l
         numCorrect += isRight
-
     numTests = len(testImages)
     print('test loss:', loss / numTests)
     print('test accuracy:', numCorrect / numTests)
     error_rate = 1 - numCorrect / numTests
     print('error rate:', error_rate)
-
-    cm = [[0 for j in range(nodesAmount)] for i in range(nodesAmount)]
-    for p, l in zip(predictions, testLabels):
-        cm[l][p] += 1
-
-    print(DataFrame(cm))
+    ConfusionMatrix(nodesAmount, predictions, testLabels)
+    BestMatchMatrix(nodesAmount, predictions, testLabels)
 
 
 if __name__ == '__main__':
