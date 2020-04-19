@@ -6,10 +6,10 @@ import torch.optim as optim
 
 def RunNN(trainImages, trainLabels, testImages, testLabels):
     nnModel = nn.Sequential(
-        nn.Conv1d(1, 10, 3, padding=1),
-        nn.ReLU(inplace=True),
+        nn.Conv1d(28, 10, 3, padding=1),
+        nn.ReLU(),
         nn.MaxPool2d(2),
-        nn.Softmax2d()
+        nn.Softmax()
     )
     nnModel.type(torch.FloatTensor)
     loss = nn.CrossEntropyLoss().type(torch.FloatTensor)
