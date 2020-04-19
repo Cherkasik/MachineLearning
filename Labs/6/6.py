@@ -1,14 +1,12 @@
-import mnist
-import tensorflow as tf
+from torchvision import datasets, transforms
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.autograd import Variable
 
 def RunNN(trainImages, trainLabels, testImages, testLabels):
     nnModel = nn.Sequential(
-        nn.Conv1d(1, 8, 3, padding=1),
+        nn.Conv1d(1, 10, 3, padding=1),
         nn.ReLU(inplace=True),
         nn.MaxPool2d(2),
         nn.Softmax2d()
@@ -16,9 +14,6 @@ def RunNN(trainImages, trainLabels, testImages, testLabels):
     nnModel.type(torch.FloatTensor)
     loss = nn.CrossEntropyLoss().type(torch.FloatTensor)
     optimizer = optim.Adam(nnModel.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-8)
-
-    trainImages = Variable(torch.from_numpy(trainImages))
-    trainLabels = Variable(torch.from_numpy(trainLabels))
 
     def Train(model, loss, optimizer, epochsNumber, trainImages, trainLabels):
         lossHistory = []
@@ -29,9 +24,9 @@ def RunNN(trainImages, trainLabels, testImages, testLabels):
             lossAccum = 0
             correct = 0
             total = 0
-            for iStep, (x, y) in enumerate(zip(trainImages, trainLabels)):
-                prediction = model(x)
-                lossValue = loss(prediction, y)
+            for i in range(1000):
+                prediction = model(trainImages[i])
+                lossValue = loss(prediction, trainLabels[i])
                 optimizer.zero_grad()
                 lossValue.backward()
                 optimizer.step()
@@ -50,8 +45,22 @@ def RunNN(trainImages, trainLabels, testImages, testLabels):
 
 if __name__ == '__main__':
     dataset = input()
+    transform = transforms.Compose([transforms.ToTensor()])
     if dataset == 'mnist':
-        RunNN(mnist.train_images()[:1000], mnist.train_labels()[:1000], mnist.test_images()[:1000], mnist.test_labels()[:1000])
-    if dataset == 'fminst':
-        (trainImages, trainLabels), (testImages, testLabels) = tf.keras.datasets.fashion_mnist.load_data()
-        RunNN(trainImages[:1000], trainLabels[:1000], testImages[:1000], testLabels[:1000])
+        train = datasets.MNIST('.', download=True, train=True, transform=transform)
+        test = datasets.MNIST('.', download=True, train=False, transform=transform)
+        trainLoader = torch.utils.data.DataLoader(train, batch_size=1000)
+        testLoader = torch.utils.data.DataLoader(test, batch_size=1000)
+        trainIter = iter(trainLoader)
+        trainImages, trainLabels = trainIter.next()
+        testIter = iter(testLoader)
+        testImages, testLabels = testIter.next()
+        RunNN(trainImages, trainLabels, testImages, testLabels)
+    if dataset == 'fmnist':
+        train = datasets.FashionMNIST('.', download=True, train=True, transform=transform)
+        test = dataset.FashionMNIST('.', download=True, train=False, transform=transform)
+        trainLoader = torch.utils.data.DataLoader(train, batch_size=1000, shuffle=True)
+        testLoader = torch.utils.data.DataLoader(test, batch_size=1000, shuffle=True)
+        trainIter = iter(trainLoader)
+        testIter = iter(testLoader)
+        RunNN(trainIter, testIter)
